@@ -1,6 +1,9 @@
 import { Router } from 'express';
 const router = Router();
 import User from '../models/User.js';
+
+import Dog from '../models/dog.js';
+import auth from '../middleware/authMiddleware.js';
 // POST /register
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs'; // or 'bcrypt'
@@ -53,4 +56,29 @@ router.post('/login', async (req, res) => {
 router.post('/logout', (req, res) => {
   res.clearCookie('token').json({ message: 'Logged out successfully' });
 });
+
+
+
+router.get('/me', auth, async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    // Get user details (excluding password)
+    const user = await User.findById(userId).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Get dogs posted by the user
+    const dogs = await Dog.find({ postedBy: userId });
+
+    res.json({
+      success: true,
+      user,
+      dogsPosted: dogs
+    });
+  } catch (err) {
+    console.error('Error fetching user profile:', err);
+    res.status(500).json({ success: false, message: 'Server Error' });
+  }
+});
+
 export default router;

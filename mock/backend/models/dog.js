@@ -6,15 +6,14 @@ const dogSchema = new mongoose.Schema({
   age: Number,
   gender: String,
   description: String,
-  image: String,
-adopted:{Boolean,default:false},
+  image: [String], // Now an array
   postedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  }
-  
+    ref: 'User'
+  },
+  isAdopted: { type: Boolean, default: false }
 });
+
 
 export default mongoose.model('Dog', dogSchema);
 
