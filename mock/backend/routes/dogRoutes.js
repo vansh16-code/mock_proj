@@ -73,61 +73,6 @@ Pet Adoption Team
 
 
 
-dogrouter.get('/postdogs', async (req, res) => {
-  try {
-    // Sample mock dog data
-    const sampleDogs = [
-      {
-        name: "Buddy",
-        breed: "Golden Retriever",
-        age: 3,
-        gender: "Male",
-        description: "Friendly and energetic. Loves kids and playing fetch.",
-        image: "https://example.com/images/buddy.jpg"
-      },
-      {
-        name: "Luna",
-        breed: "German Shepherd",
-        age: 5,
-        gender: "Female",
-        description: "Calm, loyal, and very intelligent. Perfect for a family.",
-        image: "https://example.com/images/luna.jpg"
-      },
-      {
-        name: "Charlie",
-        breed: "Beagle",
-        age: 2,
-        gender: "Male",
-        description: "Small, playful, and loves cuddles. Great for apartments.",
-        image: "https://example.com/images/charlie.jpg"
-      },
-      {
-        name: "Daisy",
-        breed: "Labrador Retriever",
-        age: 4,
-        gender: "Female",
-        description: "Affectionate and smart. Gets along with other pets.",
-        image: "https://example.com/images/daisy.jpg"
-      },
-      {
-        name: "Rocky",
-        breed: "Siberian Husky",
-        age: 2,
-        gender: "Male",
-        description: "Energetic and independent. Needs daily exercise.",
-        image: "https://example.com/images/rocky.jpg"
-      }
-    ];
-
-    // Insert sample data
-    const insertedDogs = await Dog.insertMany(sampleDogs);
-
-    return res.status(201).json({ success: true, message: "Dogs inserted", data: insertedDogs });
-  } catch (error) {
-    console.error("Error inserting dogs:", error);
-    return res.status(500).json({ success: false, message: "Failed to insert dogs", error });
-  }
-});
 
 
 
@@ -158,15 +103,15 @@ dogrouter.get('/viewdogs/:id', async (req, res) => {
 });
 
 
-dogrouter.post('/addDog', auth, async (req, res) => {
+dogrouter.post('/addDog', auth,upload.array('images', 5), async (req, res) => {
   try {
     const { name, breed, age, gender, description } = req.body;
     const userId = req.user.userId;
 
-    // const imageUploadPromises = req.files.map(file => uploadToCloudinary(file.buffer));
-    // const uploadResults = await Promise.all(imageUploadPromises);
+    const imageUploadPromises = req.files.map(file => uploadToCloudinary(file.buffer));
+    const uploadResults = await Promise.all(imageUploadPromises);
 
-    // const imageUrls = uploadResults.map(result => result.secure_url);
+    const imageUrls = uploadResults.map(result => result.secure_url);
 
     const newDog = new Dog({
       name,
@@ -174,7 +119,7 @@ dogrouter.post('/addDog', auth, async (req, res) => {
       age,
       gender,
       description,
-    //   image: imageUrls,
+      image: imageUrls,
       postedBy: userId,
     });
 
